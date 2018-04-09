@@ -65,3 +65,6 @@ typings/
 
 # End of https://www.gitignore.io/api/solidity
 
+# armariya's custom
+build/
+build_webpack/
