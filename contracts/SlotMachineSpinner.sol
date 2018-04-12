@@ -1,6 +1,6 @@
 pragma solidity ^0.4.21;
 
-import "./SlotMachineSpinner.sol";
+import "./SlotMachine.sol";
 
 contract SlotMachineSpinner is SlotMachine {
     event SpinOccured(address indexed spinner, bool result);
@@ -16,10 +16,10 @@ contract SlotMachineSpinner is SlotMachine {
 
     function randomWithMod(uint _modulus) private returns (uint256) {
         randomNonce++;
-        return uint256(keccak256(block.difficulty, block.coinbase, msg.sender, randNonce)) % _modulus;
+        return uint256(keccak256(block.difficulty, block.coinbase, msg.sender, randomNonce)) % _modulus;
     }
 
-    function findMultiplier(uint randomNumber) private view returns (uint) {
+    function findMultiplier(uint randomNumber) private pure returns (uint) {
         uint multiplier = 0;
         
         if (randomNumber <= 3) {
@@ -36,17 +36,19 @@ contract SlotMachineSpinner is SlotMachine {
     }
 
     function spin() payable public {
-        require(msg.value >= minimumWag); 
+        require(msg.value >= minimumWager); 
         uint wager = msg.value;
         uint modulus = 10;
         uint multiplier = findMultiplier(randomWithMod(modulus));
         uint rewardAmount = wager * multiplier;
         bool result = rewardAmount == 0;
 
-        msg.sender.transfer(rewardAmount);
+        if (result) {
+            msg.sender.transfer(rewardAmount);
+            emit TransferReward(msg.sender, rewardAmount);    
+        }
 
         emit SpinOccured(msg.sender, result);
-        emit TransferReward(msg.sender, rewardAmount);    
     }
 
 }
