@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity ^0.4.22;
 
 import "./SlotMachine.sol";
 
@@ -37,12 +37,12 @@ contract SlotMachineSpinner is SlotMachine {
 
     function spin() payable public {
         require(msg.value >= minimumWager); 
-        require(address(this).balance >= msg.value * maximumMultiplier)
+        require(address(this).balance >= msg.value * maximumMultiplier);
         uint wager = msg.value;
         uint modulus = 10;
         uint multiplier = findMultiplier(randomWithWagerAndMod(wager, modulus));
         uint rewardAmount = wager * multiplier;
-        bool result = rewardAmount == 0;
+        bool result = rewardAmount != 0;
 
         if (result) {
             msg.sender.transfer(rewardAmount);
@@ -52,4 +52,7 @@ contract SlotMachineSpinner is SlotMachine {
         emit SpinOccured(msg.sender, wager, result);
     }
 
+    function() payable public {
+
+    }
 }
