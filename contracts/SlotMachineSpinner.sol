@@ -1,4 +1,4 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.23;
 
 import "./SlotMachine.sol";
 
@@ -9,8 +9,8 @@ contract SlotMachineSpinner is SlotMachine {
     uint private randomNonce = 0;
     uint public minimumWager = 0.001 ether;
     uint public maximumMultiplier = 8;
-    // constructor
-    function SlotMachineSpinner() public {
+
+    constructor() public {
 
     }
 
