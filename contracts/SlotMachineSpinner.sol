@@ -34,8 +34,11 @@ contract SlotMachineSpinner is SlotMachine {
     }
 
     function spin() payable public {
-        require(msg.value >= minimumWager); 
-        require(address(this).balance >= msg.value * maximumMultiplier);
+        require(msg.value >= minimumWager, "Your wager must be more than 0.001 ether."); 
+        require(
+            address(this).balance >= msg.value * maximumMultiplier, 
+            "Sorry, right now the contract doesn't have enough balance to pay you back."
+        );
         uint wager = msg.value;
         uint modulus = 10;
         uint multiplier = findMultiplier(randomWithWagerAndMod(wager, modulus));
