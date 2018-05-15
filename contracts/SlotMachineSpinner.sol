@@ -9,11 +9,61 @@ contract SlotMachineSpinner is SlotMachine {
 
     event LogSpinOccured(address indexed spinner, uint256 wager, bool result);
     event LogTransferReward(address indexed spinner, uint8 multiplier, uint256 rewardAmount);
-    event LogSpinReturn(string firstSymbol, string secondSymbol, string thirdSymbol);
+    event LogSpinReturn(address indexed spinner, string firstSymbol, string secondSymbol, string thirdSymbol);
 
     uint256 private randomNonce = 0;
-    uint256 private minimumWager = 0.001 ether;
-    uint256 private maximumMultiplier = 8;
+    uint256 public minimumWager = 0.001 ether;
+    uint256 public maximumMultiplier = 8;
+
+    function spin() payable external {
+        // Conditions
+        require(msg.value >= minimumWager, "Your wager must be more than 0.001 ether.");
+        require(
+            address(this).balance >= msg.value.mul(maximumMultiplier), 
+            "Sorry, right now the contract doesn't have enough balance to pay you back."
+        );
+
+        // Interaction
+        uint wager = msg.value;
+
+        uint[6] memory firstSlotProbabilities = [uint(435), 1739, 3478, 5652, 7826, 10000];
+        uint[6] memory secondSlotProbabilities = [uint(435), 870, 2173, 4783, 7392, 10000];
+        uint[6] memory thirdSlotProbabilities = [uint(435), 870, 2173, 4783, 7392, 10000];
+
+        string memory symbolInFirstSlot = findSymbolInSlot(wager, firstSlotProbabilities);
+        string memory symbolInSecondSlot = findSymbolInSlot(wager, secondSlotProbabilities);
+        string memory symbolInThirdSlot = findSymbolInSlot(wager, thirdSlotProbabilities);
+
+        bool isWin = false;
+
+        if (compareString(symbolInFirstSlot, symbolInSecondSlot) && compareString(symbolInFirstSlot, symbolInThirdSlot)) {
+            // WIN
+            isWin = true;
+            sendReward(wager, symbolInFirstSlot);
+        }
+
+
+        uint8 cherryCount = countCherry(symbolInFirstSlot, symbolInSecondSlot, symbolInThirdSlot);
+
+        if (cherryCount == 1 && !isWin) {
+            // WIN with 1 cherry           
+            isWin = true;  
+            sendCherryReward(wager, cherryCount);
+        }
+
+        if (cherryCount == 2 && !isWin) {
+            // WIN with 2 cherries
+            isWin = true;
+            sendCherryReward(wager, cherryCount);
+        }
+        
+        // LOSE
+        if (!isWin) {
+            emit LogSpinOccured(msg.sender, wager, false);
+        }
+
+        emit LogSpinReturn(msg.sender, symbolInFirstSlot, symbolInSecondSlot, symbolInThirdSlot);
+    }
 
     function randomWithWagerAndMod(uint wager, uint _modulus) private returns (uint256) {
         randomNonce++;
@@ -94,56 +144,6 @@ contract SlotMachineSpinner is SlotMachine {
         }
     }
 
-    function spin() payable public {
-        // Conditions
-        require(msg.value >= minimumWager, "Your wager must be more than 0.001 ether.");
-        require(
-            address(this).balance >= msg.value.mul(maximumMultiplier), 
-            "Sorry, right now the contract doesn't have enough balance to pay you back."
-        );
-
-        // Interaction
-        uint wager = msg.value;
-
-        uint[6] memory firstSlotProbabilities = [uint(435), 1739, 3478, 5652, 7826, 10000];
-        uint[6] memory secondSlotProbabilities = [uint(435), 870, 2173, 4783, 7392, 10000];
-        uint[6] memory thirdSlotProbabilities = [uint(435), 870, 2173, 4783, 7392, 10000];
-
-        string memory symbolInFirstSlot = findSymbolInSlot(wager, firstSlotProbabilities);
-        string memory symbolInSecondSlot = findSymbolInSlot(wager, secondSlotProbabilities);
-        string memory symbolInThirdSlot = findSymbolInSlot(wager, thirdSlotProbabilities);
-
-        bool isWin = false;
-
-        if (compareString(symbolInFirstSlot, symbolInSecondSlot) && compareString(symbolInFirstSlot, symbolInThirdSlot)) {
-            // WIN
-            isWin = true;
-            sendReward(wager, symbolInFirstSlot);
-        }
-
-
-        uint8 cherryCount = countCherry(symbolInFirstSlot, symbolInSecondSlot, symbolInThirdSlot);
-
-        if (cherryCount == 1 && !isWin) {
-            // WIN with 1 cherry           
-            isWin = true;  
-            sendCherryReward(wager, cherryCount);
-        }
-
-        if (cherryCount == 2 && !isWin) {
-            // WIN with 2 cherries
-            isWin = true;
-            sendCherryReward(wager, cherryCount);
-        }
-        
-        // LOSE
-        if (!isWin) {
-            emit LogSpinOccured(msg.sender, wager, false);
-        }
-
-        emit LogSpinReturn(symbolInFirstSlot, symbolInSecondSlot, symbolInThirdSlot);
-    }
-
     function sendReward(uint wager, string symbol) private {
         uint8 multiplier = findMultiplier(symbol);
         uint256 rewardAmount = wager.mul(multiplier);
@@ -188,6 +188,10 @@ contract SlotMachineSpinner is SlotMachine {
 
     function compareString(string first, string second) pure private returns (bool isDifference) {
         return keccak256(first) == keccak256(second);
+    }
+
+    function getContractBalance() view external returns (uint) {
+        return address(this).balance;
     }
 
     function() payable public {

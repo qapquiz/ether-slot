@@ -39,6 +39,22 @@ contract('SlotMachineSpinner', async (accounts) => {
     assert.isDefined(symbolsReturn.thirdSymbol);
   });
 
+  it('Filter event with address must only come with that address', async () => {
+    let eventCount = 0;
+    const logSpinReturnEvent = instance.LogSpinReturn({spinner: owner}, function(error, result) {
+      if (!error) {
+        eventCount++;
+      }
+    }); 
+
+    await instance.spin({from: owner, value: web3.toWei('0.01', 'ether')});
+    await instance.spin({from: owner, value: web3.toWei('0.01', 'ether')});
+    await instance.spin({from: other, value: web3.toWei('0.01', 'ether')});
+
+    logSpinReturnEvent.stopWatching();
+    assert.equal(eventCount, 2, "eventCount after filter must be 2");
+  });
+
   it('Other people cannot withdraw fund from the contract', async () => {
     const contractBalance = await web3.eth.getBalance(instance.address).toNumber();
     const contractBalanceInETH = web3.fromWei(contractBalance, 'ether');
