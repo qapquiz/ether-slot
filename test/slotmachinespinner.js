@@ -27,23 +27,10 @@ contract('SlotMachineSpinner', async (accounts) => {
 
   it('Spin the slot machine must be return (string, string, string) in event LogSpinReturn', async () => {
     const result = await instance.spin({from: other, value: web3.toWei('0.01', 'ether')});
-    // console.log(result.logs.filter(log => {
-    //   return log.event == 'LogTransferReward';
-    // }).forEach(log => {
-    //   console.log({
-    //     ...log.args,
-    //     multiplier: log.args.multiplier.toString(),
-    //     rewardAmount: web3.fromWei(log.args.rewardAmount.toString(), 'ether')
-    //   });
-    // }));
     const logs = result.logs.filter(log => {
         return log.event == 'LogSpinReturn';
     });
     
-    // logs.forEach(log => {
-    //   console.log(log.args);
-    // });    
-
     const symbolsReturn = logs[0].args;
     
     assert.isObject(symbolsReturn);
