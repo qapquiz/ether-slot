@@ -55,6 +55,10 @@ contract('SlotMachineSpinner', async (accounts) => {
     assert.equal(eventCount, 2, "eventCount after filter must be 2");
   });
 
+  it('Get Netowrk from web3', () => {
+    assert.equal(web3.version.network, 5777, 'Ganache network id must be 5777');
+  });
+
   it('Other people cannot withdraw fund from the contract', async () => {
     const contractBalance = await web3.eth.getBalance(instance.address).toNumber();
     const contractBalanceInETH = web3.fromWei(contractBalance, 'ether');
