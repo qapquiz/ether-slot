@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./SlotMachine.sol";
@@ -67,7 +67,7 @@ contract SlotMachineSpinner is SlotMachine {
 
     function randomWithWagerAndMod(uint wager, uint _modulus) private returns (uint256) {
         randomNonce++;
-        return uint256(keccak256(block.difficulty, block.coinbase, block.number, msg.sender, wager, randomNonce)) % _modulus;
+        return uint256(keccak256(abi.encodePacked(block.difficulty, block.coinbase, block.number, msg.sender, wager, randomNonce))) % _modulus;
     }
 
     function findMultiplier(string symbol) private pure returns (uint8) {
@@ -187,7 +187,7 @@ contract SlotMachineSpinner is SlotMachine {
     }
 
     function compareString(string first, string second) pure private returns (bool isDifference) {
-        return keccak256(first) == keccak256(second);
+        return keccak256(abi.encodePacked(first)) == keccak256(abi.encodePacked(second));
     }
 
     function getContractBalance() view external returns (uint) {
