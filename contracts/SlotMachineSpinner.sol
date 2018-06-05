@@ -2,9 +2,10 @@ pragma solidity 0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./SlotMachine.sol";
+import "./ModulusExponential.sol";
 
 
-contract SlotMachineSpinner is SlotMachine {
+contract SlotMachineSpinner is SlotMachine, ModulusExponential {
     using SafeMath for uint256;
 
     event LogSpinOccured(address indexed spinner, uint256 wager, bool result);
