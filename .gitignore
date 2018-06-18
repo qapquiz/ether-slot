@@ -68,4 +68,4 @@ typings/
 # armariya's custom
 build/
 build_webpack/
-**/.DS_STORE
+**/.DS_Store
