@@ -195,5 +195,7 @@ contract SlotMachineSpinner is SlotMachine {
         if (_isCherry(thirdSymbol)) {
             cherryCount++;
         }
+        
+        return cherryCount;
     }
 }
